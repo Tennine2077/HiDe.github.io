@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiDe: Rethinking The Zoom-IN method in High Resolution MLLMs</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">HiDe</a>
+            <div class="nav-links">
+                <a href="#abstract">Abstract</a>
+                <a href="#analysis">Analysis</a>
+                <a href="#method">Method</a>
+                <a href="#results">Results</a>
+                <a href="#code">Code</a>
+                <a href="https://arxiv.org/abs/2510.00054" target="_blank">Paper</a>
+                <a href="https://github.com/Tennine2077/HiDe" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge-container">
+                <span class="badge badge-primary">Training-Free</span>
+                <span class="badge badge-secondary">SOTA</span>
+                <span class="badge badge-accent">High-Resolution MLLMs</span>
+            </div>
+            <h1 class="title">
+                <span class="highlight">HiDe:</span> Rethinking The Zoom-IN method in High Resolution MLLMs via Hierarchical Decoupling
+            </h1>
+            <div class="authors">
+                <span class="author">Xianjie Liu</span>
+                <span class="separator">•</span>
+                <span class="author">Yiman Hu</span>
+                <span class="separator">•</span>
+                <span class="author">Yixiong Zou</span>
+                <span class="separator">•</span>
+                <span class="author">Liang Wu</span>
+                <span class="separator">•</span>
+                <span class="author">Jian Xu</span>
+                <span class="separator">•</span>
+                <span class="author">Bo Zheng</span>
+            </div>
+            <div class="institution">
+                <span class="inst-name">Alibaba Group</span>
+            </div>
+            <div class="hero-buttons">
+                <a href="https://arxiv.org/abs/2510.00054" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-file-alt"></i> arXiv Paper
+                </a>
+                <a href="https://github.com/Tennine2077/HiDe" class="btn btn-secondary" target="_blank">
+                    <i class="fab fa-github"></i> GitHub Code
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-card card-1">
+                <i class="fas fa-brain"></i>
+                <span>Attention Decoupling</span>
+            </div>
+            <div class="floating-card card-2">
+                <i class="fas fa-crop-alt"></i>
+                <span>Layout Preserving</span>
+            </div>
+            <div class="floating-card card-3">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>75% Less Memory</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- TL;DR Section -->
+    <section class="tldr-section">
+        <div class="container">
+            <div class="tldr-card">
+                <div class="tldr-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h2>TL;DR</h2>
+                <p>
+                    We reveal that the main issue in high-resolution MLLMs is <strong>not small object size</strong>, 
+                    but <strong>complex background interference</strong>. We propose <strong>HiDe</strong> — a 
+                    <strong>training-free</strong> framework using <strong>Token-wise Attention Decoupling (TAD)</strong> 
+                    to identify key information tokens and <strong>Layout-Preserving Decoupling (LPD)</strong> to 
+                    eliminate background interference. HiDe sets new SOTA on V*Bench (92.1%), HRBench4K, and HRBench8K, 
+                    using 75% less memory than previous training-free approaches.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Abstract Section -->
+    <section id="abstract" class="abstract-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">01</span>
+                Abstract
+            </h2>
+            <div class="abstract-content">
+                <p>
+                    Multimodal Large Language Models (MLLMs) have made significant strides in visual understanding tasks. 
+                    However, their performance on high-resolution images remains suboptimal. While existing approaches often 
+                    attribute this limitation to perceptual constraints and argue that MLLMs struggle to recognize small objects, 
+                    leading them to use "zoom in" strategies for better detail, our analysis reveals a different cause: 
+                    <strong>the main issue is not object size, but rather caused by complex background interference</strong>.
+                </p>
+                <p>
+                    We systematically analyze this "zoom in" operation through a series of decoupling experiments and propose 
+                    the <strong>Hierarchical Decoupling Framework (HiDe)</strong>, a training-free framework that uses 
+                    Token-wise Attention Decoupling (TAD) to decouple the question tokens and identify the key information tokens, 
+                    then leverages their attention weights to achieve precise alignment with the target visual regions. 
+                    Subsequently, it employs Layout-Preserving Decoupling (LPD) to decouple these regions from the background 
+                    and reconstructs a compact representation that preserves essential spatial layouts while eliminating background interference.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Insight Section -->
+    <section class="insight-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">02</span>
+                Key Insight
+            </h2>
+            <div class="insight-grid">
+                <div class="insight-card insight-wrong">
+                    <div class="insight-header">
+                        <i class="fas fa-times-circle"></i>
+                        <h3>Previous Understanding</h3>
+                    </div>
+                    <p>MLLMs struggle with high-resolution images due to <strong>small objects</strong>. 
+                    Solution: "Zoom in" to see better.</p>
+                </div>
+                <div class="insight-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="insight-card insight-correct">
+                    <div class="insight-header">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Our Discovery</h3>
+                    </div>
+                    <p>The real issue is <strong>complex background interference</strong>, not object size. 
+                    Solution: <strong>Decouple</strong> the target from background!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Section -->
+    <section id="analysis" class="figure-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">03</span>
+                Hierarchical Decoupling Analysis
+            </h2>
+            
+            <!-- Figure 1: Abstract -->
+            <div class="figure-container">
+                <img src="images/abstract.png" alt="Hierarchical Decoupling Analysis">
+                <p class="figure-caption">
+                    <strong>Figure 1:</strong> Hierarchical decoupling analysis of the zoom-in operation. We systematically decompose 
+                    the zoom-in strategy to identify the key factors that contribute to performance improvements.
+                </p>
+            </div>
+
+            <!-- Figure 2: Think Line -->
+            <div class="figure-container" style="margin-top: 40px;">
+                <img src="images/thinkline.png" alt="Analysis Framework">
+                <p class="figure-caption">
+                    <strong>Figure 2:</strong> Our analysis framework: (i) Zoom-in upscale and crop, (ii) Crop foreground and background, 
+                    (iii) Question text semantic and non-semantic tokens, (iv) Foreground object appearance and spatial layout.
+                </p>
+            </div>
+
+            <!-- Figure 3: Upscale -->
+            <div class="figure-container" style="margin-top: 40px;">
+                <img src="images/upsacle.png" alt="Upscale Experiment">
+                <p class="figure-caption">
+                    <strong>Figure 3:</strong> Simply enlarging the object does not deliver stable gains; on multi-object tasks, 
+                    magnification can even hurt performance. Zoom-in works primarily because cropping removes irrelevant background.
+                </p>
+            </div>
+
+            <!-- Figure 4: Acc Mask Ratio -->
+            <div class="figure-container" style="margin-top: 40px;">
+                <img src="images/acc_mask_ratio.png" alt="Accuracy vs Mask Ratio">
+                <p class="figure-caption">
+                    <strong>Figure 4:</strong> Performance increases monotonically with mask ratio on both single and multi-object tasks, 
+                    demonstrating that complex background semantics significantly distract MLLMs.
+                </p>
+            </div>
+
+            <!-- Figure 5: Analysis -->
+            <div class="figure-container" style="margin-top: 40px;">
+                <img src="images/analysis.png" alt="Token-level Attention Analysis">
+                <p class="figure-caption">
+                    <strong>Figure 5:</strong> Semantic tokens exhibit substantially higher attention to GT regions than non-semantic tokens, 
+                    confirming that token-level attention decoupling yields more accurate region proposals.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Method Section -->
+    <section id="method" class="method-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">04</span>
+                Method
+            </h2>
+            
+            <!-- Figure 6: Method Overview -->
+            <div class="method-figure">
+                <img src="images/method.png" alt="HiDe Framework Overview">
+                <p class="caption">
+                    <strong>Figure 6:</strong> Overview of the HiDe Framework. The framework consists of two key components: 
+                    Token-wise Attention Decoupling (TAD) and Layout-Preserving Decoupling (LPD).
+                </p>
+            </div>
+
+            <!-- TAD Section -->
+            <div class="method-block">
+                <div class="method-icon tad-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="method-content">
+                    <h3>Token-wise Attention Decoupling (TAD)</h3>
+                    <p>
+                        Decouples question tokens and identifies key information tokens, then leverages attention weights 
+                        for precise alignment with target visual regions. This allows the model to focus on what truly matters 
+                        for answering the question. The process includes:
+                    </p>
+                    <ul style="color: var(--text-secondary); margin-left: 20px; margin-top: 12px;">
+                        <li>Extract key information using an "extract" prompt</li>
+                        <li>Compute raw attention maps over image tokens</li>
+                        <li>Smooth attention maps with Gaussian kernel</li>
+                        <li>Subtract background noise prior for purification</li>
+                    </ul>
+                    <div class="method-features">
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Question-guided attention</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Precise region localization</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>No additional training needed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LPD Section -->
+            <div class="method-block">
+                <div class="method-icon lpd-icon">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="method-content">
+                    <h3>Layout-Preserving Decoupling (LPD)</h3>
+                    <p>
+                        Decouples target regions from background and reconstructs a compact representation that preserves 
+                        essential spatial layouts while eliminating background interference. This creates cleaner visual 
+                        inputs for the MLLM. The process includes:
+                    </p>
+                    <ul style="color: var(--text-secondary); margin-left: 20px; margin-top: 12px;">
+                        <li>Binarize normalized attention maps using threshold</li>
+                        <li>Extract connected components as bounding boxes</li>
+                        <li>Grid-based reconstruction preserving spatial layout</li>
+                        <li>Compact the image by discarding empty regions</li>
+                    </ul>
+                    <div class="method-features">
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Background noise elimination</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Spatial layout preservation</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>75% memory reduction</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Visualization -->
+            <div class="pipeline-visual">
+                <h3>Framework Overview</h3>
+                <div class="pipeline-flow">
+                    <div class="pipeline-step">
+                        <div class="step-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <span>High-Res Image</span>
+                    </div>
+                    <div class="pipeline-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="pipeline-step highlight-step">
+                        <div class="step-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span>TAD</span>
+                        <small>Attention Decoupling</small>
+                    </div>
+                    <div class="pipeline-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="pipeline-step highlight-step">
+                        <div class="step-icon">
+                            <i class="fas fa-crop-alt"></i>
+                        </div>
+                        <span>LPD</span>
+                        <small>Layout Preserving</small>
+                    </div>
+                    <div class="pipeline-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="pipeline-step">
+                        <div class="step-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <span>MLLM</span>
+                        <small>Enhanced Understanding</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="results-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">05</span>
+                Results
+            </h2>
+            <p class="section-subtitle">HiDe sets new SOTA on multiple benchmarks</p>
+
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Method</th>
+                            <th>V*Bench</th>
+                            <th>HRBench4K</th>
+                            <th>HRBench8K</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Qwen2.5-VL 7B</td>
+                            <td>Baseline</td>
+                            <td>79.1%</td>
+                            <td>71.8%</td>
+                            <td>67.9%</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>Qwen2.5-VL 7B</td>
+                            <td><strong>+ HiDe</strong></td>
+                            <td><strong class="sota">92.1%</strong></td>
+                            <td><strong class="sota">77.5%</strong></td>
+                            <td><strong class="sota">75.4%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Qwen2.5-VL 32B</td>
+                            <td>Baseline</td>
+                            <td>87.9%</td>
+                            <td>73.9%</td>
+                            <td>70.4%</td>
+                        </tr>
+                        <tr>
+                            <td>DeepEyes</td>
+                            <td>RL Training</td>
+                            <td>90.1%</td>
+                            <td>75.1%</td>
+                            <td>72.6%</td>
+                        </tr>
+                        <tr>
+                            <td>InternVL3 8B</td>
+                            <td>Baseline</td>
+                            <td>80.6%</td>
+                            <td>70.8%</td>
+                            <td>69.9%</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td>InternVL3 8B</td>
+                            <td><strong>+ HiDe</strong></td>
+                            <td><strong class="sota">91.6%</strong></td>
+                            <td><strong class="sota">76.8%</strong></td>
+                            <td><strong class="sota">77.1%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="results-highlights">
+                <div class="highlight-card">
+                    <div class="highlight-number">92.1%</div>
+                    <div class="highlight-label">V*Bench SOTA</div>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-number">75%</div>
+                    <div class="highlight-label">Memory Reduction</div>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-number">0</div>
+                    <div class="highlight-label">Training Required</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visual Results Section -->
+    <section class="visual-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">06</span>
+                Visual Results
+            </h2>
+            <p class="section-subtitle">Comparison of attention maps between HiDe (TAD) and ViCrop</p>
+
+            <!-- Figure 7: Visual Comparison -->
+            <div class="visual-card">
+                <img src="images/more_visual_case.png" alt="Visual Comparison Results">
+                <h3>Attention Map Comparison (Figure 7)</h3>
+                <p>
+                    Our TAD method accurately highlights the objects of interest in both single-object and multi-object 
+                    scenarios. In contrast, ViCrop's attention map appears scattered and disorganized in multi-object cases, 
+                    failing to clearly distinguish or localize all relevant instances.
+                </p>
+            </div>
+
+            <!-- More Cases -->
+            <div class="visual-card" style="margin-top: 40px;">
+                <img src="images/more_case.png" alt="More Visual Cases">
+                <h3>More Visual Cases</h3>
+                <p>
+                    Additional qualitative results demonstrating the effectiveness of HiDe across various scenarios.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Appendix Figures -->
+    <section class="figure-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">07</span>
+                Additional Analysis
+            </h2>
+
+            <div class="image-gallery">
+                <div class="gallery-item">
+                    <img src="images/layer_visual1.png" alt="Layer Visualization 1">
+                    <div class="caption"><strong>Figure 8:</strong> Layer-wise attention visualization for Qwen2.5-VL</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/layer_visual2.png" alt="Layer Visualization 2">
+                    <div class="caption"><strong>Figure 9:</strong> Layer-wise attention visualization analysis</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/analysis-intern.png" alt="InternVL Analysis">
+                    <div class="caption"><strong>Figure 10:</strong> Attention analysis for InternVL3</div>
+                </div>
+                <div class="gallery-item">
+                    <img src="images/fail_case.png" alt="Failure Cases">
+                    <div class="caption"><strong>Figure 12:</strong> Failure cases and limitations</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Code Section -->
+    <section id="code" class="code-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">08</span>
+                Get Started
+            </h2>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">Installation</span>
+                    <div class="code-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <pre><code># Clone the repository
+git clone https://github.com/Tennine2077/HiDe.git
+cd HiDe
+
+# Create conda environment
+conda create -n HiDe python=3.11.4
+conda activate HiDe
+
+# Install dependencies
+pip install -r requirements.txt</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">Quick Start - Qwen2.5-VL</span>
+                    <div class="code-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <pre><code>cd Hide/Qwen2.5
+
+# Run inference
+python cycle_infer.py
+
+# Calculate metrics
+python Vstar_Metric.py</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">Quick Start - Qwen3-VL</span>
+                    <div class="code-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <pre><code>cd Hide/Qwen3
+
+# Run inference with Qwen3-VL
+python cycle_infer.py</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-title">Quick Start - InternVL3</span>
+                    <div class="code-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+                <pre><code>cd Hide/Internvl
+
+# Run inference with InternVL3
+python cycle_inference_internvl.py</code></pre>
+            </div>
+
+            <div class="supported-models">
+                <h3>Supported Models</h3>
+                <div class="model-badges">
+                    <span class="model-badge"><i class="fas fa-check"></i> Qwen2.5-VL</span>
+                    <span class="model-badge"><i class="fas fa-fire"></i> Qwen3-VL (New!)</span>
+                    <span class="model-badge"><i class="fas fa-check"></i> InternVL3</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Citation Section -->
+    <section class="citation-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">09</span>
+                Citation
+            </h2>
+            <p class="section-subtitle">If you find HiDe helpful in your research, please consider citing:</p>
+
+            <div class="code-block citation-block">
+                <pre><code>@misc{liu2025hiderethinkingzoominmethod,
+      title={HiDe: Rethinking The Zoom-IN method in High Resolution MLLMs via Hierarchical Decoupling}, 
+      author={Xianjie Liu and Yiman Hu and Yixiong Zou and Liang Wu and Jian Xu and Bo Zheng},
+      year={2025},
+      eprint={2510.00054},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2510.00054}, 
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>HiDe</h3>
+                    <p>Hierarchical Decoupling Framework for High-Resolution MLLMs</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://arxiv.org/abs/2510.00054" target="_blank">
+                        <i class="fas fa-file-alt"></i> Paper
+                    </a>
+                    <a href="https://github.com/Tennine2077/HiDe" target="_blank">
+                        <i class="fab fa-github"></i> Code
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Made with <i class="fas fa-heart"></i> by the HiDe Team</p>
+                <p>Licensed under Apache 2.0 License</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
