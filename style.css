@@ -236,11 +236,13 @@ body {
     animation-delay: 0.3s;
 }
 
-/* ICML Accepted Badge in Title */
-.icml-badge {
-    color: #dc2626;
+/* ICML Notice above title */
+.icml-notice {
+    color: #ef4444;
+    font-size: 1.2rem;
     font-weight: 700;
-    display: inline-block;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.6s ease 0.1s backwards;
 }
 
 /* Title */
