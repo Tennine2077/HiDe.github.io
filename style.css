@@ -236,6 +236,16 @@ body {
     animation-delay: 0.3s;
 }
 
+.badge-icml {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    animation-delay: 0s;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    border: 2px solid #fca5a5;
+}
+
 /* Title */
 .title {
     font-size: clamp(2rem, 5vw, 3.5rem);
